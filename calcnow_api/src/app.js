@@ -13,7 +13,7 @@ app.use('/auth', authRoutes);
 
 // Nueva ruta Nómina
 const nominaRoutes = require('./routes/nomina.routes.js');
-app.use('/api/calcular', nominaRoutes);
+app.use('/api/nomina', nominaRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
