@@ -1,27 +1,15 @@
-const DivisaService = require('../services/divisas.service');
+const divisasService = require('../services/divisas.service');
 
 exports.convertirDivisa = (req, res) => {
+    console.log("💱 Divisas Request:", req.body);
     const { cantidad, origen, destino } = req.body;
 
-    if (!cantidad || !origen || !destino) {
-        return res.status(400).json({ success: false, message: "Datos incompletos" });
-    }
+    // Llamamos al servicio
+    const response = divisasService.procesarCambio(cantidad, origen, destino);
 
-    const respuestaServicio = DivisaService.convertirMoneda(cantidad, origen, destino);
-
-    if (respuestaServicio.success) {
-        return res.json({
-            success: true,
-            origen,
-            destino,
-            cantidad,
-            resultado: respuestaServicio.resultado,
-            tasa: respuestaServicio.tasa_aplicada
-        });
+    if (response.success) {
+        return res.json(response);
     } else {
-        return res.status(400).json({ 
-            success: false, 
-            message: "Divisa no soportada" 
-        });
+        return res.status(400).json(response);
     }
 };
