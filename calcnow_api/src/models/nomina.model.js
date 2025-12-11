@@ -3,55 +3,131 @@ class NominaModel {
         this.salario = parseFloat(brutoAnual);
         this.pagas = parseInt(pagas) || 12;
         this.discapacidad = discapacidad;
-        this.hijos = hijos; 
-        this.edad = edad;
+        this.hijos = hijos === "Si";
+        this.edad = parseInt(edad);
         this.grupo = grupo;
     }
 
+
+    //SEGURIDAD SOCIAL REAL 2025
+
     _calcularSeguridadSocial() {
-        // Tope máximo 2025 (~56.640€) y tasa 6.49%
-        const baseCotizacion = Math.min(this.salario, 56640);
-        return baseCotizacion * 0.0649;
+
+        // Bases mínimas/máximas 2025 (GENERALES)
+        const baseMin = 1260; // €/mes
+        const baseMax = 4720; // €/mes
+
+        // % trabajador 2025
+        const contingenciasComunes = 4.70 / 100;
+        const desempleo = 1.55 / 100;
+        const formacion = 0.10 / 100;
+        const fogasa = 0.00;
+
+        const tipoTotal = contingenciasComunes + desempleo + formacion + fogasa;
+
+        // Salario mensual para calcular base
+        const salarioMensual = this.salario / 12;
+
+        // Base aplicable
+        const baseCotMensual = Math.min(Math.max(salarioMensual, baseMin), baseMax);
+
+        // Cálculo anual
+        return baseCotMensual * tipoTotal * 12;
     }
 
-    _calcularRetencionIRPF(baseImponible) {
-        let minimoPersonal = 5550;
-        if (this.hijos === "Si" || this.hijos === true) minimoPersonal += 2400;
-        if (this.discapacidad === "33%") minimoPersonal += 3000;
-        else if (this.discapacidad === "65%" || this.discapacidad === "+65%") minimoPersonal += 9000;
 
-        const getCuota = (base) => {
-            if (base <= 0) return 0;
-            let cuota = 0;
-            if (base > 300000) { cuota += (base - 300000) * 0.47; base = 300000; }
-            if (base > 60000)  { cuota += (base - 60000) * 0.45;  base = 60000; }
-            if (base > 35200)  { cuota += (base - 35200) * 0.37;  base = 35200; }
-            if (base > 20200)  { cuota += (base - 20200) * 0.30;  base = 20200; }
-            if (base > 12450)  { cuota += (base - 12450) * 0.24;  base = 12450; }
-            if (base > 0)      { cuota += base * 0.19; }
-            return cuota;
-        };
+    //MÍNIMOS PERSONALES Y FAMILIARES (IRPF)
 
-        const cuotaBase = getCuota(baseImponible);
-        const cuotaMinimo = getCuota(minimoPersonal);
-        return Math.max(0, cuotaBase - cuotaMinimo);
+    _calcularMinimosIRPF() {
+        let minimo = 5550;
+
+        // Edad
+        if (this.edad >= 65) minimo += 1150;
+        if (this.edad >= 75) minimo += 1400;
+
+        // Hijos
+        if (this.hijos) {
+
+            minimo += 2400;
+        }
+
+        // Discapacidad del contribuyente
+        if (this.discapacidad === "33%") minimo += 3000;
+        if (this.discapacidad === "65%" || this.discapacidad === "+65%") minimo += 9000;
+
+        return minimo;
     }
+
+
+    //  TARIFA IRPF ESTATAL + AUTONÓMICA 2025
+
+    _tarifaIRPF(base) {
+        let cuota = 0;
+
+        const tramos = [
+            { hasta: 12450, tipo: 0.19 },
+            { hasta: 20200, tipo: 0.24 },
+            { hasta: 35200, tipo: 0.30 },
+            { hasta: 60000, tipo: 0.37 },
+            { hasta: 300000, tipo: 0.45 },
+            { hasta: Infinity, tipo: 0.47 },
+        ];
+
+        let restante = base;
+
+        for (let tramo of tramos) {
+            if (restante <= 0) break;
+
+            const cantidad = Math.min(restante, tramo.hasta - (tramo.prevHasta || 0));
+            cuota += cantidad * tramo.tipo;
+
+            tramo.prevHasta = tramo.hasta;
+            restante -= cantidad;
+        }
+
+        return cuota;
+    }
+
+
+    //CÁLCULO IRPF REAL
+
+    _calcularIRPF(baseImponible) {
+        const minimo = this._calcularMinimosIRPF();
+
+        const cuotaTotal = this._tarifaIRPF(baseImponible);
+        const cuotaMinimo = this._tarifaIRPF(minimo);
+
+        return Math.max(0, cuotaTotal - cuotaMinimo);
+    }
+
+    // RESULTADOS FINALES
 
     obtenerResultados() {
+        // Seguridad Social REAL
         const seguridadSocial = this._calcularSeguridadSocial();
-        const baseImponible = this.salario - seguridadSocial - 2000; 
-        const retencion = this._calcularRetencionIRPF(baseImponible);
-        const netoAnual = this.salario - seguridadSocial - retencion;
+
+        // Base IRPF
+        const baseImponible = this.salario - seguridadSocial - 2000; // reducción general
+
+        // IRPF anual
+        const irpf = this._calcularIRPF(baseImponible);
+
+        // Neto anual
+        const netoAnual = this.salario - seguridadSocial - irpf;
+
+        // Neto mensual según nº pagas
+        const netoMensual = netoAnual / this.pagas;
 
         return {
-            bruto_anual: this.salario.toFixed(2),
-            neto_anual: netoAnual.toFixed(2),
-            neto_mensual: (netoAnual / this.pagas).toFixed(2),
-            retencion_anual: retencion.toFixed(2),
-            tipo_retencion: (this.salario > 0 ? (retencion / this.salario) * 100 : 0).toFixed(2) + "%",
+            salario_bruto_anual: this.salario.toFixed(2),
+            salario_neto_anual: netoAnual.toFixed(2),
+            salario_neto_mensual: netoMensual.toFixed(2),
+            retencion_anual: irpf.toFixed(2),
+            tipo_retencion: ((irpf / this.salario) * 100).toFixed(2) + "%",
             seguridad_social: seguridadSocial.toFixed(2),
             num_pagas: this.pagas
         };
     }
 }
+
 module.exports = NominaModel;
