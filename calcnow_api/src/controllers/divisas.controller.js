@@ -1,15 +1,11 @@
 const divisasService = require('../services/divisas.service');
 
-exports.convertirDivisa = (req, res) => {
-    console.log("💱 Divisas Request:", req.body);
-    const { cantidad, origen, destino } = req.body;
-
-    // Llamamos al servicio
-    const response = divisasService.procesarCambio(cantidad, origen, destino);
-
-    if (response.success) {
-        return res.json(response);
-    } else {
-        return res.status(400).json(response);
+exports.guardar = async (req, res) => {
+    try {
+        const { id_usuario, cantidad, resultado, origen, destino } = req.body;
+        const respuesta = await divisasService.guardarTransaccion(id_usuario, cantidad, resultado, origen, destino);
+        res.status(201).json(respuesta);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
     }
 };

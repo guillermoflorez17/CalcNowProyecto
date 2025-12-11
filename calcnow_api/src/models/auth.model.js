@@ -1,25 +1,37 @@
-const db = require('../database/db'); 
+// src/models/auth.model.js
+const db = require('../database/db'); // Importamos la conexión creada arriba
 
 class AuthModel {
-    constructor(email, password) {
-        this.email = email;
-        this.password = password;
+    
+    static async findByEmail(email) {
+        // Busca usuario por email
+        const [rows] = await db.query('SELECT * FROM usuarios WHERE email = ?', [email]);
+        return rows[0];
     }
 
-    static async findByCredentials(email, password) {
-        const query = "SELECT * FROM usuario WHERE correo_electronico = ? AND contrasena = ?";
-        const [rows] = await db.query(query, [email, password]);
-        return rows.length > 0 ? rows[0] : null;
+    static async create({ nombre, email, password }) {
+        // Inserta nuevo usuario
+        const [result] = await db.query(
+            'INSERT INTO usuarios (nombre, email, contrasena) VALUES (?, ?, ?)', 
+            [nombre, email, password]
+        );
+        return result.insertId;
     }
 
-    static async create(email, password) {
-        const query = "INSERT INTO usuario (correo_electronico, contrasena) VALUES (?, ?)";
-        const [result] = await db.query(query, [email, password]);
+    static async findById(id) {
+        const [rows] = await db.query('SELECT * FROM usuarios WHERE id = ?', [id]);
+        return rows[0];
+    }
+
+    static async update(id, datos) {
+        // Ejemplo simplificado (ajustar según tus columnas reales)
+        const [result] = await db.query('UPDATE usuarios SET ? WHERE id = ?', [datos, id]);
         return result;
     }
 
-    isValid() {
-        return this.email && this.email.includes('@') && this.password.length >= 6;
+    static async delete(id) {
+        const [result] = await db.query('DELETE FROM usuarios WHERE id = ?', [id]);
+        return result;
     }
 }
 

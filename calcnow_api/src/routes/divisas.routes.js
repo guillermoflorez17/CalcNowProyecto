@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { convertirDivisa } = require('../controllers/divisas.controller');
+const controller = require('../controllers/divisas.controller');
 
-// POST http://localhost:3000/api/divisas/convertir
-router.post('/convertir', convertirDivisa);
+// Única ruta: POST http://localhost:3000/api/divisas/guardar
+router.post('/guardar', controller.guardar);
 
 module.exports = router;

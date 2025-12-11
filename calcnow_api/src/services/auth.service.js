@@ -1,29 +1,30 @@
 const AuthModel = require('../models/auth.model');
 
-exports.login = async (email, password) => {
-    try {
-        const user = await AuthModel.findByCredentials(email, password);
-        if (user) {
-            return { success: true, user: user, message: "Login correcto" };
-        } else {
-            return { success: false, message: "Credenciales incorrectas" };
-        }
-    } catch (error) {
-        throw error;
-    }
+exports.register = async (nombre, email, password) => {
+    const existe = await AuthModel.findByEmail(email);
+    if (existe) throw new Error("El correo ya está registrado");
+    const id = await AuthModel.create({ nombre, email, password });
+    return { id, nombre, email };
 };
 
-exports.register = async (email, password) => {
-    try {
-        const existingUser = await AuthModel.findByCredentials(email, password);
-        if (existingUser) return { success: false, message: "El usuario ya existe" };
+exports.login = async (email, password) => {
+    const user = await AuthModel.findByEmail(email);
+    if (!user || user.contrasena !== password) throw new Error("Credenciales inválidas");
+    const { contrasena, ...datosUsuario } = user; // No devolvemos el pass
+    return datosUsuario;
+};
 
-        const newUser = new AuthModel(email, password);
-        if (!newUser.isValid()) return { success: false, message: "Datos inválidos" };
+exports.obtenerPerfil = async (id) => {
+    const user = await AuthModel.findById(id);
+    if (!user) throw new Error("Usuario no encontrado");
+    const { contrasena, ...datosUsuario } = user;
+    return datosUsuario;
+};
 
-        await AuthModel.create(email, password);
-        return { success: true, message: "Usuario creado exitosamente" };
-    } catch (error) {
-        throw error;
-    }
+exports.actualizarPerfil = async (id, datos) => {
+    return await AuthModel.update(id, datos);
+};
+
+exports.eliminarCuenta = async (id) => {
+    return await AuthModel.delete(id);
 };
