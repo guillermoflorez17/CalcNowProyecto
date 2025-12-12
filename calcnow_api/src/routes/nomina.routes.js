@@ -1,9 +1,10 @@
-const router = require('express').Router();
-const controller = require('../controllers/nomina.controller');
+const express = require('express');
+const router = express.Router();
+const nominaController = require('../controllers/nomina.controller');
 
-router.post('/calcular', controller.calcular);
-router.post('/guardar', controller.guardar);
-router.get('/historial/:id_usuario', controller.historial);
-router.delete('/historial/:id', controller.eliminar);
+router.post('/calcular', nominaController.calcular);
+router.post('/guardar', nominaController.guardar);
+router.get('/historial/:id_usuario', nominaController.historial);
+router.delete('/:id', nominaController.eliminar);
 
 module.exports = router;
