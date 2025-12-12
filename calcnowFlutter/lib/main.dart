@@ -8,7 +8,7 @@ import 'auth/views/home_screen.dart';
 // -------------------- CALCULADORAS --------------------
 import 'auth/views/nomina_screen.dart';
 import 'auth/views/hipoteca_screen.dart';
-
+import 'auth/views/divisas_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const CalcNowApp());
@@ -42,7 +42,7 @@ class CalcNowApp extends StatelessWidget {
         // --------- CALCULADORAS ---------
         '/nomina': (context) => NominaScreen(),
         '/hipoteca': (context) => const HipotecaScreen(),
-      },
+        '/divisas': (context) => const DivisasScreen(),},
     );
   }
 }
