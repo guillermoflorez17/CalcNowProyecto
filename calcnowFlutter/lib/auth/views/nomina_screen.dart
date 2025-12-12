@@ -4,108 +4,52 @@ import 'package:http/http.dart' as http;
 import 'refnomina_screen.dart';
 
 class NominaScreen extends StatefulWidget {
+  const NominaScreen({super.key});
+
   @override
   State<NominaScreen> createState() => _NominaScreenState();
 }
 
 class _NominaScreenState extends State<NominaScreen> {
-  // CONTROLLERS
+  // Controllers
   final sueldoCtrl = TextEditingController();
   final edadCtrl = TextEditingController();
 
-  // DROPDOWNS
-  String pagasValue = "";
-  String contratoValue = "";
-  String grupoValue = "";
-  String ubicacionValue = "";
-  String discapacidadValue = "";
-  String civilValue = "";
+  // Estado
+  String pagas = "12";
+  String contrato = "General";
+  String grupo = "Ingenieros y Licenciados";
+  String comunidad = "Andalucía";
+  String discapacidad = "Sin discapacidad";
+  String estadoCivil = "Soltero";
 
-  // YES / NO
   bool hijos = false;
+  bool conyugeRentas = false;
+  bool traslado = false;
+  bool dependientes = false;
 
-  // LISTAS
-  final List<String> listaPagas = ["12", "14", "16"];
-  final List<String> listaContratos = ["General", "Temporal", "Prácticas"];
-  final List<String> listaGrupos = [
-    "Ingenieros y Licenciados",
-    "Ingenieros Técnicos",
-    "Jefes Administrativos",
-    "Ayudantes no Titulados",
-    "Oficiales Administrativos",
-    "Subalternos",
-    "Auxiliares Administrativos",
-    "Oficiales de primera y segunda",
-    "Peones"
-  ];
+  bool cargando = false;
 
-  final List<String> listaComunidades = [
-    "Andalucía",
-    "Aragón",
-    "Asturias",
-    "Cantabria",
-    "Castilla y León",
-    "Castilla-La Mancha",
-    "Cataluña",
-    "Ceuta",
-    "Comunidad Valenciana",
-    "Extremadura",
-    "Galicia",
-    "Islas Baleares",
-    "Islas Canarias",
-    "La Rioja",
-    "Madrid",
-    "Melilla",
-    "Murcia",
-    "Navarra",
-    "País Vasco"
-  ];
-
-  final List<String> listaDiscapacidad = [
-    "Sin discapacidad",
-    "33%",
-    "65%",
-    "+65%"
-  ];
-
-  final List<String> listaEstadoCivil = [
-    "Soltero",
-    "Casado",
-    "Divorciado",
-    "Viudo"
-  ];
-
-  // VALIDACIÓN
-  bool _validarCampos() {
-    return sueldoCtrl.text.isNotEmpty &&
-        edadCtrl.text.isNotEmpty &&
-        pagasValue.isNotEmpty &&
-        contratoValue.isNotEmpty &&
-        grupoValue.isNotEmpty &&
-        ubicacionValue.isNotEmpty &&
-        discapacidadValue.isNotEmpty &&
-        civilValue.isNotEmpty;
-  }
-
-  // =================== CALCULAR NÓMINA ===================
   Future<void> calcularNomina() async {
-    try {
-      final url =
-          Uri.parse("http://127.0.0.1:3000/api/nomina/calcular");
+    setState(() => cargando = true);
 
+    try {
       final response = await http.post(
-        url,
+        Uri.parse("http://127.0.0.1:3000/api/nomina/calcular"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "salario_bruto_anual": double.parse(sueldoCtrl.text),
-          "pagas": int.parse(pagasValue),
+          "pagas": int.parse(pagas),
           "edad": int.parse(edadCtrl.text),
-          "discapacidad": discapacidadValue,
-          "estado_civil": civilValue,
+          "grupo": grupo,
+          "ubicacion": comunidad,
+          "discapacidad": discapacidad,
+          "estado_civil": estadoCivil,
           "hijos": hijos ? "Si" : "No",
-          "tipo_contrato": contratoValue,
-          "grupo": grupoValue,
-          "ubicacion": ubicacionValue,
+          "conyuge_rentas_altas": conyugeRentas ? "Si" : "No",
+          "traslado_trabajo": traslado ? "Si" : "No",
+          "dependientes": dependientes ? "Si" : "No",
+          "tipo_contrato": contrato,
         }),
       );
 
@@ -115,273 +59,194 @@ class _NominaScreenState extends State<NominaScreen> {
         context,
         MaterialPageRoute(
           builder: (_) => RefNominaScreen(
-            netoMensual:
-                data["salario_neto_mensual"]?.toString() ?? "0.00",
-            pagasExtra: data["salario_neto_anual"] != null
-                ? (double.parse(
-                            data["salario_neto_anual"].toString()) /
-                        int.parse(pagasValue))
-                    .toStringAsFixed(2)
-                : "0.00",
-            netoAnual:
-                data["salario_neto_anual"]?.toString() ?? "0.00",
-            retencionAnual:
-                data["retencion_anual"]?.toString() ?? "0.00",
-            tipoRetencion:
-                data["tipo_retencion"]?.toString() ?? "0%",
-            seguridadSocial:
-                data["seguridad_social"]?.toString() ?? "0.00",
+            netoMensual: data["salario_neto_mensual"],
+            pagasExtra:
+                (double.parse(data["salario_neto_anual"]) / int.parse(pagas))
+                    .toStringAsFixed(2),
+            netoAnual: data["salario_neto_anual"],
+            retencionAnual: data["retencion_anual"],
+            tipoRetencion: "15%",
+            seguridadSocial: data["seguridad_social"],
           ),
         ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Error al conectar con el servidor"),
+          content: Text("Error al calcular la nómina"),
           backgroundColor: Colors.red,
         ),
       );
+    } finally {
+      setState(() => cargando = false);
     }
   }
 
-  // =================== UI ===================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEFF3F8),
       body: SafeArea(
-        child: Stack(
-          children: [
-            // ---------------- ICONO HOME ----------------
-            Positioned(
-              top: 20,
-              right: 20,
-              child: GestureDetector(
-                onTap: () =>
-                    Navigator.pushReplacementNamed(context, "/home"),
-                child: const Icon(
-                  Icons.home_outlined,
-                  size: 40,
-                  color: Colors.black87,
-                ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            children: [
+              const Text(
+                "Calculadora de nómina",
+                style: TextStyle(fontSize: 42, fontWeight: FontWeight.w900),
               ),
-            ),
+              const SizedBox(height: 40),
 
-            // ---------------- CONTENIDO ----------------
-            Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(30),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Calculadora de nómina",
-                      style: TextStyle(
-                          fontSize: 40, fontWeight: FontWeight.w900),
-                    ),
-                    const SizedBox(height: 50),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ---------------- IZQUIERDA ----------------
+                  Expanded(
+                    child: Column(
                       children: [
-                        // -------- IZQUIERDA --------
-                        SizedBox(
-                          width: 420,
-                          child: Column(
-                            children: [
-                              _buildBlock(
-                                "Sueldo Bruto Anual",
-                                _buildInput(
-                                    sueldoCtrl, "Ej: 25000"),
-                              ),
-                              _buildBlock(
-                                "Número de Pagas",
-                                _buildDropdown(
-                                  hint: "Seleccione pagas",
-                                  value: pagasValue,
-                                  items: listaPagas,
-                                  onChanged: (v) =>
-                                      setState(() => pagasValue = v!),
-                                ),
-                              ),
-                              _buildBlock(
-                                "Edad",
-                                _buildInput(edadCtrl, "Ej: 25"),
-                              ),
-                              _buildBlock(
-                                "Tipo de contrato",
-                                _buildDropdown(
-                                  hint: "Seleccione contrato",
-                                  value: contratoValue,
-                                  items: listaContratos,
-                                  onChanged: (v) =>
-                                      setState(
-                                          () => contratoValue = v!),
-                                ),
-                              ),
-                              _buildBlock(
-                                "Grupo profesional",
-                                _buildDropdown(
-                                  hint: "Seleccione grupo",
-                                  value: grupoValue,
-                                  items: listaGrupos,
-                                  onChanged: (v) =>
-                                      setState(() => grupoValue = v!),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(width: 90),
-
-                        // -------- DERECHA --------
-                        SizedBox(
-                          width: 420,
-                          child: Column(
-                            children: [
-                              _buildBlock(
-                                "Ubicación del domicilio fiscal",
-                                _buildDropdown(
-                                  hint: "Seleccione comunidad",
-                                  value: ubicacionValue,
-                                  items: listaComunidades,
-                                  onChanged: (v) =>
-                                      setState(() => ubicacionValue = v!),
-                                ),
-                              ),
-                              _buildBlock(
-                                "Grado de discapacidad",
-                                _buildDropdown(
-                                  hint: "Seleccione grado",
-                                  value: discapacidadValue,
-                                  items: listaDiscapacidad,
-                                  onChanged: (v) =>
-                                      setState(
-                                          () => discapacidadValue = v!),
-                                ),
-                              ),
-                              _buildBlock(
-                                "Estado civil",
-                                _buildDropdown(
-                                  hint: "Seleccione estado civil",
-                                  value: civilValue,
-                                  items: listaEstadoCivil,
-                                  onChanged: (v) =>
-                                      setState(() => civilValue = v!),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        campo("Sueldo Bruto Anual", sueldoCtrl),
+                        campo("Número de Pagas Anuales",
+                            TextEditingController(text: pagas),
+                            enabled: false),
+                        campo("Edad", edadCtrl),
+                        campo("Tipo de contrato",
+                            TextEditingController(text: contrato),
+                            enabled: false),
+                        campo("Grupo Profesional",
+                            TextEditingController(text: grupo),
+                            enabled: false),
+                        botonesSiNo("¿Estás trasladado por trabajo?",
+                            traslado, (v) => setState(() => traslado = v)),
                       ],
                     ),
+                  ),
 
-                    const SizedBox(height: 60),
+                  const SizedBox(width: 80),
 
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_validarCampos()) {
-                          calcularNomina();
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  "Debes completar todos los campos"),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 45, vertical: 18),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(40),
-                        ),
-                      ),
-                      child: const Text(
+                  // ---------------- DERECHA ----------------
+                  Expanded(
+                    child: Column(
+                      children: [
+                        campo("Ubicación del Domicilio Fiscal",
+                            TextEditingController(text: comunidad),
+                            enabled: false),
+                        campo("Grado de Discapacidad",
+                            TextEditingController(text: discapacidad),
+                            enabled: false),
+                        campo("Estado Civil",
+                            TextEditingController(text: estadoCivil),
+                            enabled: false),
+                        botonesSiNo(
+                            "¿Tu cónyuge tiene rentas > 1500€?",
+                            conyugeRentas,
+                            (v) => setState(() => conyugeRentas = v)),
+                        botonesSiNo("¿Tienes hijos?", hijos,
+                            (v) => setState(() => hijos = v)),
+                        botonesSiNo(
+                            "¿Personas a tu cargo?",
+                            dependientes,
+                            (v) => setState(() => dependientes = v)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 40),
+
+              ElevatedButton(
+                onPressed: cargando ? null : calcularNomina,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0077CC),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40),
+                  ),
+                ),
+                child: cargando
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
                         "Calcular",
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                        ),
+                            fontSize: 22, fontWeight: FontWeight.bold),
                       ),
-                    ),
-                  ],
-                ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  // =================== WIDGETS ===================
-  Widget _buildInput(
-      TextEditingController controller, String placeholder) {
-    return SizedBox(
-      width: 370,
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          hintText: placeholder,
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide:
-                const BorderSide(color: Color(0xFF46899F), width: 2),
+              const SizedBox(height: 30),
+
+              const Text(
+                "CALCNOW",
+                style: TextStyle(
+                    fontSize: 28, fontWeight: FontWeight.w900),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildDropdown({
-    required String hint,
-    required String value,
-    required List<String> items,
-    required Function(String?) onChanged,
-  }) {
-    return Container(
-      width: 370,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF46899F), width: 2),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          hint: Text(hint),
-          value: value.isEmpty ? null : value,
-          items: items
-              .map((e) =>
-                  DropdownMenuItem(value: e, child: Text(e)))
-              .toList(),
-          onChanged: onChanged,
+  // ---------------- WIDGETS ----------------
+
+  Widget campo(String label, TextEditingController ctrl,
+      {bool enabled = true}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: TextField(
+        controller: ctrl,
+        enabled: enabled,
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: Colors.white,
+          border:
+              OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
         ),
       ),
     );
   }
 
-  Widget _buildBlock(String title, Widget child) {
+  Widget botonesSiNo(
+      String texto, bool valor, Function(bool) onChange) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 25),
+      padding: const EdgeInsets.only(bottom: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: const TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.w700)),
+          Text(texto,
+              style:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
-          child,
+          Row(
+            children: [
+              boton("Sí", valor, () => onChange(true)),
+              const SizedBox(width: 12),
+              boton("No", !valor, () => onChange(false)),
+            ],
+          )
         ],
+      ),
+    );
+  }
+
+  Widget boton(String texto, bool activo, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+        decoration: BoxDecoration(
+          color: activo ? const Color(0xFF0077CC) : Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: Colors.black),
+        ),
+        child: Text(
+          texto,
+          style: TextStyle(
+              color: activo ? Colors.white : Colors.black,
+              fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }

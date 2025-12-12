@@ -42,73 +42,75 @@ class RefNominaScreen extends StatelessWidget {
 
             Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(30),
+                padding: const EdgeInsets.all(40),
                 child: Column(
                   children: [
-                    const SizedBox(height: 20),
-
                     const Text(
                       "Resultado de la nómina",
                       style: TextStyle(
-                        fontSize: 40,
+                        fontSize: 42,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
 
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 60),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ------------------- IZQUIERDA -------------------
+                        // ---------------- IZQUIERDA ----------------
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _title("Tu sueldo mensual neto sería de"),
-                            _resultBox(netoMensual),
+                            titulo("Tu sueldo mensual neto sería de"),
+                            cajaResultado(netoMensual),
+
                             const SizedBox(height: 40),
 
-                            _title("Tendrías 2 pagas extra de"),
-                            _resultBox(pagasExtra),
+                            titulo("Tendrías 2 pagas extra de"),
+                            cajaResultado(pagasExtra),
+
                             const SizedBox(height: 40),
 
-                            _title("Equivalente a un sueldo anual neto de"),
-                            _resultBox(netoAnual),
+                            titulo("Equivalente a un sueldo anual neto de"),
+                            cajaResultado(netoAnual),
                           ],
                         ),
 
-                        const SizedBox(width: 80),
+                        const SizedBox(width: 90),
 
-                        // ------------------- DERECHA -------------------
+                        // ---------------- DERECHA ----------------
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _title("Retención de IRPF anual"),
-                            _resultBox(retencionAnual),
+                            titulo("Retención de IRPF anual"),
+                            cajaResultado(retencionAnual),
+
                             const SizedBox(height: 40),
 
-                            _title("Tipo de retención"),
-                            _resultBox(tipoRetencion),
+                            titulo("Tipo de retención"),
+                            cajaResultado(tipoRetencion),
+
                             const SizedBox(height: 40),
 
-                            _title("Cuotas de la Seguridad\nSocial al año"),
-                            _resultBox(seguridadSocial),
+                            titulo("Cuotas de la Seguridad Social al año"),
+                            cajaResultado(seguridadSocial),
                           ],
                         ),
                       ],
                     ),
 
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 60),
 
                     // ---------------- BOTÓN REPETIR ----------------
                     ElevatedButton(
                       onPressed: () =>
                           Navigator.pushReplacementNamed(context, "/nomina"),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF187BCD),
+                        backgroundColor: const Color(0xFF0077CC),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 16),
+                            horizontal: 50, vertical: 18),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(40),
                         ),
@@ -116,9 +118,9 @@ class RefNominaScreen extends StatelessWidget {
                       child: const Text(
                         "Repetir cálculo",
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 19,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -128,7 +130,7 @@ class RefNominaScreen extends StatelessWidget {
                     const Text(
                       "CALCNOW",
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 30,
                         fontWeight: FontWeight.w900,
                         color: Colors.black87,
                       ),
@@ -145,9 +147,9 @@ class RefNominaScreen extends StatelessWidget {
 
   // ---------------- WIDGETS ----------------
 
-  Widget _title(String text) {
+  Widget titulo(String texto) {
     return Text(
-      text,
+      texto,
       style: const TextStyle(
         fontSize: 22,
         fontWeight: FontWeight.w900,
@@ -155,11 +157,11 @@ class RefNominaScreen extends StatelessWidget {
     );
   }
 
-  Widget _resultBox(String value) {
+  Widget cajaResultado(String valor) {
     return Container(
-      width: 300,
+      width: 320,
       height: 55,
-      margin: const EdgeInsets.only(top: 10),
+      margin: const EdgeInsets.only(top: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(40),
@@ -167,11 +169,10 @@ class RefNominaScreen extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: Text(
-        value,
+        valor,
         style: const TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w700,
-          color: Colors.black87,
         ),
       ),
     );
