@@ -12,12 +12,12 @@ exports.calcular = (req, res) => {
 exports.guardar = async(req, res) => {
     try {
         const { id_usuario, datos_entrada, resultado_calculo } = req.body;
-        const resultado = await nominaService.guardarHistorial(
+        const id = await nominaService.guardarHistorial(
             id_usuario,
             datos_entrada,
             resultado_calculo
         );
-        res.status(201).json(resultado);
+        res.status(201).json({ id_nomina: id });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -27,7 +27,7 @@ exports.historial = async(req, res) => {
     try {
         const { id_usuario } = req.params;
         const lista = await nominaService.obtenerHistorial(id_usuario);
-        res.status(200).json(lista);
+        res.json(lista);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -37,7 +37,7 @@ exports.eliminar = async(req, res) => {
     try {
         const { id } = req.params;
         const resultado = await nominaService.eliminarHistorial(id);
-        res.status(200).json({ eliminado: resultado });
+        res.json({ eliminado: resultado });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
