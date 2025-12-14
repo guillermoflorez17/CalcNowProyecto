@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart'; // ← IMPORT NECES
 import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
