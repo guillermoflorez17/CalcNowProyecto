@@ -11,11 +11,9 @@ class NominaScreen extends StatefulWidget {
 }
 
 class _NominaScreenState extends State<NominaScreen> {
-  // Controllers
   final sueldoCtrl = TextEditingController();
   final edadCtrl = TextEditingController();
 
-  // Estado
   String pagas = "12";
   String contrato = "General";
   String grupo = "Ingenieros y Licenciados";
@@ -31,11 +29,21 @@ class _NominaScreenState extends State<NominaScreen> {
   bool cargando = false;
 
   Future<void> calcularNomina() async {
+    if (sueldoCtrl.text.isEmpty || edadCtrl.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Rellena sueldo y edad"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() => cargando = true);
 
     try {
       final response = await http.post(
-        Uri.parse("http://127.0.0.1:3000/api/nomina/calcular"),
+        Uri.parse("http://localhost:3000/api/nomina/calcular"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "salario_bruto_anual": double.parse(sueldoCtrl.text),
@@ -53,7 +61,13 @@ class _NominaScreenState extends State<NominaScreen> {
         }),
       );
 
+      if (response.statusCode != 200) {
+        throw Exception("Error backend");
+      }
+
       final data = jsonDecode(response.body);
+      final netoAnual =
+          double.parse(data["salario_neto_anual"].toString());
 
       Navigator.push(
         context,
@@ -61,8 +75,7 @@ class _NominaScreenState extends State<NominaScreen> {
           builder: (_) => RefNominaScreen(
             netoMensual: data["salario_neto_mensual"],
             pagasExtra:
-                (double.parse(data["salario_neto_anual"]) / int.parse(pagas))
-                    .toStringAsFixed(2),
+                (netoAnual / int.parse(pagas)).toStringAsFixed(2),
             netoAnual: data["salario_neto_anual"],
             retencionAnual: data["retencion_anual"],
             tipoRetencion: "15%",
@@ -72,8 +85,8 @@ class _NominaScreenState extends State<NominaScreen> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Error al calcular la nómina"),
+        SnackBar(
+          content: Text("Error al calcular: $e"),
           backgroundColor: Colors.red,
         ),
       );
@@ -100,48 +113,70 @@ class _NominaScreenState extends State<NominaScreen> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ---------------- IZQUIERDA ----------------
                   Expanded(
                     child: Column(
                       children: [
                         campo("Sueldo Bruto Anual", sueldoCtrl),
-                        campo("Número de Pagas Anuales",
-                            TextEditingController(text: pagas),
-                            enabled: false),
                         campo("Edad", edadCtrl),
-                        campo("Tipo de contrato",
-                            TextEditingController(text: contrato),
-                            enabled: false),
-                        campo("Grupo Profesional",
-                            TextEditingController(text: grupo),
-                            enabled: false),
-                        botonesSiNo("¿Estás trasladado por trabajo?",
-                            traslado, (v) => setState(() => traslado = v)),
+                        dropdown("Número de Pagas", pagas, ["12", "14"],
+                            (v) => setState(() => pagas = v)),
+                        dropdown("Tipo de contrato", contrato,
+                            ["General", "Temporal", "Prácticas"],
+                            (v) => setState(() => contrato = v)),
+                        dropdown(
+                            "Grupo Profesional",
+                            grupo,
+                            [
+                              "Ingenieros y Licenciados",
+                              "Ingenieros Técnicos",
+                              "Jefes Administrativos",
+                              "Oficiales Administrativos",
+                              "Auxiliares",
+                              "Subalternos"
+                            ],
+                            (v) => setState(() => grupo = v)),
+                        botonesSiNo(
+                            "¿Traslado por trabajo?",
+                            traslado,
+                            (v) => setState(() => traslado = v)),
                       ],
                     ),
                   ),
 
                   const SizedBox(width: 80),
 
-                  // ---------------- DERECHA ----------------
                   Expanded(
                     child: Column(
                       children: [
-                        campo("Ubicación del Domicilio Fiscal",
-                            TextEditingController(text: comunidad),
-                            enabled: false),
-                        campo("Grado de Discapacidad",
-                            TextEditingController(text: discapacidad),
-                            enabled: false),
-                        campo("Estado Civil",
-                            TextEditingController(text: estadoCivil),
-                            enabled: false),
+                        dropdown(
+                            "Ubicación del domicilio fiscal",
+                            comunidad,
+                            [
+                              "Andalucía",
+                              "Madrid",
+                              "Cataluña",
+                              "Valencia",
+                              "País Vasco"
+                            ],
+                            (v) => setState(() => comunidad = v)),
+                        dropdown(
+                            "Discapacidad",
+                            discapacidad,
+                            [
+                              "Sin discapacidad",
+                              "33% o más",
+                              "65% o más"
+                            ],
+                            (v) => setState(() => discapacidad = v)),
+                        dropdown("Estado civil", estadoCivil,
+                            ["Soltero", "Casado"],
+                            (v) => setState(() => estadoCivil = v)),
                         botonesSiNo(
-                            "¿Tu cónyuge tiene rentas > 1500€?",
+                            "¿Cónyuge con rentas > 1500€?",
                             conyugeRentas,
                             (v) => setState(() => conyugeRentas = v)),
-                        botonesSiNo("¿Tienes hijos?", hijos,
-                            (v) => setState(() => hijos = v)),
+                        botonesSiNo("¿Tienes hijos?",
+                            hijos, (v) => setState(() => hijos = v)),
                         botonesSiNo(
                             "¿Personas a tu cargo?",
                             dependientes,
@@ -158,11 +193,10 @@ class _NominaScreenState extends State<NominaScreen> {
                 onPressed: cargando ? null : calcularNomina,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0077CC),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 60, vertical: 20),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(40),
-                  ),
+                      borderRadius: BorderRadius.circular(40)),
                 ),
                 child: cargando
                     ? const CircularProgressIndicator(color: Colors.white)
@@ -173,12 +207,36 @@ class _NominaScreenState extends State<NominaScreen> {
                       ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
 
-              const Text(
-                "CALCNOW",
-                style: TextStyle(
-                    fontSize: 28, fontWeight: FontWeight.w900),
+              
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "CALC",
+                    style: TextStyle(
+                      fontSize: 58,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const Text(
+                    "NOW",
+                    style: TextStyle(
+                      fontSize: 58,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF46899F),
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Image.asset(
+                    'assets/logo_transparente.png',
+                    width: 75,
+                    height: 75,
+                    fit: BoxFit.contain,
+                  ),
+                ],
               ),
             ],
           ),
@@ -187,15 +245,33 @@ class _NominaScreenState extends State<NominaScreen> {
     );
   }
 
-  // ---------------- WIDGETS ----------------
-
-  Widget campo(String label, TextEditingController ctrl,
-      {bool enabled = true}) {
+  // ---------- COMPONENTES ----------
+  Widget campo(String label, TextEditingController ctrl) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
       child: TextField(
         controller: ctrl,
-        enabled: enabled,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: Colors.white,
+          border:
+              OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+        ),
+      ),
+    );
+  }
+
+  Widget dropdown(String label, String value, List<String> items,
+      Function(String) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        items:
+            items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+        onChanged: (v) => onChanged(v!),
         decoration: InputDecoration(
           labelText: label,
           filled: true,
@@ -224,7 +300,7 @@ class _NominaScreenState extends State<NominaScreen> {
               const SizedBox(width: 12),
               boton("No", !valor, () => onChange(false)),
             ],
-          )
+          ),
         ],
       ),
     );

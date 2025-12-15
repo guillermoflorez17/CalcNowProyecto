@@ -9,7 +9,6 @@ class HipotecaScreen extends StatefulWidget {
 }
 
 class _HipotecaScreenState extends State<HipotecaScreen> {
-  // Controllers
   final TextEditingController precioController = TextEditingController();
   final TextEditingController ahorroController = TextEditingController();
   final TextEditingController plazoController = TextEditingController();
@@ -20,9 +19,6 @@ class _HipotecaScreenState extends State<HipotecaScreen> {
   String tipoInteres = "fijo";
   String estadoInmueble = "nuevo";
 
-  // --------------------------------------------------
-  // CÁLCULO HIPOTECA
-  // --------------------------------------------------
   void calcularHipoteca() {
     final precio = double.tryParse(precioController.text) ?? 0;
     final ahorro = double.tryParse(ahorroController.text) ?? 0;
@@ -64,9 +60,6 @@ class _HipotecaScreenState extends State<HipotecaScreen> {
     });
   }
 
-  // --------------------------------------------------
-  // UI
-  // --------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,7 +67,6 @@ class _HipotecaScreenState extends State<HipotecaScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            // -------- CONTENIDO --------
             SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 40),
               child: Column(
@@ -151,9 +143,11 @@ class _HipotecaScreenState extends State<HipotecaScreen> {
 
                   const SizedBox(height: 35),
                   campoTitulo("Localización del inmueble"),
-                  campoTexto(localizacionController,
-                      hinIcon: Icons.location_on_outlined,
-                      hint: "Ej: Sevilla"),
+                  campoTexto(
+                    localizacionController,
+                    hinIcon: Icons.location_on_outlined,
+                    hint: "Ej: Sevilla",
+                  ),
                   const SizedBox(height: 35),
 
                   campoTitulo("Estado del inmueble"),
@@ -222,18 +216,41 @@ class _HipotecaScreenState extends State<HipotecaScreen> {
                   ),
 
                   const SizedBox(height: 60),
-                  const Center(
-                    child: Text(
-                      "CALCNOW 🏠",
-                      style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-                    ),
+
+                  // 🔥 LOGO CALCNOW IGUAL AL RESTO DE LA APP
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "CALC",
+                        style: TextStyle(
+                          fontSize: 58,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const Text(
+                        "NOW",
+                        style: TextStyle(
+                          fontSize: 58,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF46899F),
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      Image.asset(
+                        'assets/logo_transparente.png',
+                        width: 75,
+                        height: 75,
+                        fit: BoxFit.contain,
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
 
-            // -------- CASITA (SIEMPRE CLICABLE) --------
+            // -------- CASITA ARRIBA --------
             Positioned(
               top: 20,
               right: 20,
@@ -265,14 +282,16 @@ class _HipotecaScreenState extends State<HipotecaScreen> {
     );
   }
 
-  // --------------------------------------------------
-  // WIDGETS REUTILIZABLES
-  // --------------------------------------------------
-  Widget campoTitulo(String texto) =>
-      Text(texto, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold));
+  // ---------------- WIDGETS ----------------
+  Widget campoTitulo(String texto) => Text(
+        texto,
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      );
 
-  Widget campoDescripcion(String texto) =>
-      Text(texto, style: const TextStyle(fontSize: 13, color: Colors.black54));
+  Widget campoDescripcion(String texto) => Text(
+        texto,
+        style: const TextStyle(fontSize: 13, color: Colors.black54),
+      );
 
   Widget campoTexto(TextEditingController controller,
       {String? hint,

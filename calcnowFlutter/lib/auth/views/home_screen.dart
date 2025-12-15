@@ -129,9 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ---------------------------------------
-  // TARJETA ANIMADA (HOVER + CLICK REBOTE)
-  // ---------------------------------------
+
 
   Widget _buildCard({
     required String title,

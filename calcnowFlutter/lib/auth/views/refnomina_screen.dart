@@ -125,15 +125,36 @@ class RefNominaScreen extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 60),
 
-                    const Text(
-                      "CALCNOW",
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.black87,
-                      ),
+                    // 
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "CALC",
+                          style: TextStyle(
+                            fontSize: 58,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const Text(
+                          "NOW",
+                          style: TextStyle(
+                            fontSize: 58,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF46899F),
+                          ),
+                        ),
+                        const SizedBox(width: 15),
+                        Image.asset(
+                          'assets/logo_transparente.png',
+                          width: 75,
+                          height: 75,
+                          fit: BoxFit.contain,
+                        ),
+                      ],
                     ),
                   ],
                 ),

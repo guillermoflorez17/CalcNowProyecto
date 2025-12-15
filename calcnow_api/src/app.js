@@ -41,7 +41,7 @@ app.use('/api/divisas', divisasRoutes);
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`🚀 API CalcNow completa corriendo en puerto ${PORT}`);
+    console.log(` API CalcNow completa corriendo en puerto ${PORT}`);
     console.log(`   - Auth:     http://localhost:${PORT}/auth/login`);
     console.log(`   - Nómina:   http://localhost:${PORT}/api/nomina/calcular`);
     console.log(`   - Hipoteca: http://localhost:${PORT}/api/hipoteca/calcular`);

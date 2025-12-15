@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 // --- CLASE MODELO (Datos de la moneda) ---
 class Currency {
-  final String code; // Ej: EUR
-  final String name; // Ej: Euro
-  final double rate; // Tasa de cambio respecto al Euro (Base 1.0)
+  final String code;
+  final String name;
+  final double rate;
 
   Currency({required this.code, required this.name, required this.rate});
 }
@@ -18,7 +18,6 @@ class DivisasScreen extends StatefulWidget {
 }
 
 class _DivisasScreenState extends State<DivisasScreen> {
-  // Lista estática de divisas (base EUR)
   final List<Currency> _staticCurrencies = [
     Currency(code: 'EUR', name: 'Euro', rate: 1.0000),
     Currency(code: 'USD', name: 'Dólar estadounidense', rate: 1.0540),
@@ -37,7 +36,6 @@ class _DivisasScreenState extends State<DivisasScreen> {
     Currency(code: 'SEK', name: 'Corona sueca', rate: 11.5500),
   ];
 
-  // Controladores
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _resultController = TextEditingController();
 
@@ -47,24 +45,13 @@ class _DivisasScreenState extends State<DivisasScreen> {
   @override
   void initState() {
     super.initState();
-    _fromCurrency = _staticCurrencies.firstWhere((c) => c.code == 'USD',
-        orElse: () => _staticCurrencies[0]);
-    _toCurrency = _staticCurrencies.firstWhere((c) => c.code == 'EUR',
-        orElse: () => _staticCurrencies[0]);
-  }
-
-  @override
-  void dispose() {
-    _amountController.dispose();
-    _resultController.dispose();
-    super.dispose();
+    _fromCurrency = _staticCurrencies.firstWhere((c) => c.code == 'USD');
+    _toCurrency = _staticCurrencies.firstWhere((c) => c.code == 'EUR');
   }
 
   void _calculate() {
     if (_amountController.text.isEmpty) {
-      setState(() {
-        _resultController.text = "";
-      });
+      _resultController.text = "";
       return;
     }
 
@@ -72,52 +59,34 @@ class _DivisasScreenState extends State<DivisasScreen> {
         double.tryParse(_amountController.text.replaceAll(',', '.')) ?? 0.0;
 
     final double result =
-        (amount / _fromCurrency.rate) * _toCurrency.rate; // cruce de tasas
+        (amount / _fromCurrency.rate) * _toCurrency.rate;
 
     setState(() {
       _resultController.text = result.toStringAsFixed(2);
     });
   }
 
-  // Emoji de bandera para algunas monedas (para acercarnos al mockup)
   String _currencyFlag(String code) {
-    switch (code) {
-      case 'USD':
-        return '🇺🇸';
-      case 'EUR':
-        return '🇪🇺';
-      case 'GBP':
-        return '🇬🇧';
-      case 'JPY':
-        return '🇯🇵';
-      case 'MXN':
-        return '🇲🇽';
-      case 'COP':
-        return '🇨🇴';
-      case 'ARS':
-        return '🇦🇷';
-      case 'BRL':
-        return '🇧🇷';
-      case 'CAD':
-        return '🇨🇦';
-      case 'AUD':
-        return '🇦🇺';
-      case 'CNY':
-        return '🇨🇳';
-      case 'CHF':
-        return '🇨🇭';
-      case 'KRW':
-        return '🇰🇷';
-      case 'INR':
-        return '🇮🇳';
-      case 'SEK':
-        return '🇸🇪';
-      default:
-        return '🌍';
-    }
+    const flags = {
+      'USD': '🇺🇸',
+      'EUR': '🇪🇺',
+      'GBP': '🇬🇧',
+      'JPY': '🇯🇵',
+      'MXN': '🇲🇽',
+      'COP': '🇨🇴',
+      'ARS': '🇦🇷',
+      'BRL': '🇧🇷',
+      'CAD': '🇨🇦',
+      'AUD': '🇦🇺',
+      'CNY': '🇨🇳',
+      'CHF': '🇨🇭',
+      'KRW': '🇰🇷',
+      'INR': '🇮🇳',
+      'SEK': '🇸🇪',
+    };
+    return flags[code] ?? '';
   }
 
-  // Campo tipo "pastilla" (se usa para Importe y Conversión)
   Widget _pillTextField({
     required TextEditingController controller,
     bool readOnly = false,
@@ -142,14 +111,12 @@ class _DivisasScreenState extends State<DivisasScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
-          borderSide:
-              const BorderSide(color: Colors.black, width: 1.8),
+          borderSide: const BorderSide(color: Colors.black, width: 1.8),
         ),
       ),
     );
   }
 
-  // Tarjeta tipo dropdown para "Desde" y "A"
   Widget _currencyCard({
     required String title,
     required Currency selected,
@@ -158,13 +125,9 @@ class _DivisasScreenState extends State<DivisasScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
-        ),
+        Text(title,
+            style:
+                const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
@@ -172,28 +135,23 @@ class _DivisasScreenState extends State<DivisasScreen> {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: Colors.black, width: 1.4),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<Currency>(
               value: selected,
               isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down),
               items: _staticCurrencies.map((c) {
-                return DropdownMenuItem<Currency>(
+                return DropdownMenuItem(
                   value: c,
                   child: Row(
                     children: [
-                      Text(
-                        _currencyFlag(c.code),
-                        style: const TextStyle(fontSize: 20),
-                      ),
+                      Text(_currencyFlag(c.code),
+                          style: const TextStyle(fontSize: 20)),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(
-                          c.name,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13),
-                        ),
+                        child: Text(c.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 13)),
                       ),
                     ],
                   ),
@@ -209,47 +167,37 @@ class _DivisasScreenState extends State<DivisasScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = const Color(0xFF46899F);
-
     return Scaffold(
       backgroundColor: const Color(0xFFEEF3F8),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.all(24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Fila superior: título + icono home
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const SizedBox(width: 40), // Para equilibrar con el icono de la derecha
+                  const SizedBox(width: 40),
                   const Text(
                     'Cambio divisas',
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.black,
-                    ),
+                    style:
+                        TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.home_outlined, size: 26),
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/home');
-                    },
+                    icon: const Icon(Icons.home_outlined),
+                    onPressed: () =>
+                        Navigator.pushNamed(context, '/home'),
                   ),
                 ],
               ),
 
               const SizedBox(height: 40),
 
-              // Importe
-              const Text(
-                'Importe',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Importe',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
               const SizedBox(height: 8),
               _pillTextField(
@@ -262,7 +210,6 @@ class _DivisasScreenState extends State<DivisasScreen> {
 
               const SizedBox(height: 40),
 
-              // Fila de "Desde" - icono intercambio - "A"
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -270,40 +217,33 @@ class _DivisasScreenState extends State<DivisasScreen> {
                     child: _currencyCard(
                       title: 'Desde',
                       selected: _fromCurrency,
-                      onChanged: (Currency? newVal) {
-                        if (newVal == null) return;
-                        setState(() {
-                          _fromCurrency = newVal;
-                        });
+                      onChanged: (v) {
+                        setState(() => _fromCurrency = v!);
                         _calculate();
                       },
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Column(
-                    children: [
-                      const SizedBox(height: 30),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          border: Border.all(color: Colors.black, width: 1.2),
-                        ),
-                        child: const Icon(Icons.swap_horiz, size: 24),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 32),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border:
+                            Border.all(color: Colors.black, width: 1.2),
                       ),
-                    ],
+                      child: const Icon(Icons.swap_horiz),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: _currencyCard(
                       title: 'A',
                       selected: _toCurrency,
-                      onChanged: (Currency? newVal) {
-                        if (newVal == null) return;
-                        setState(() {
-                          _toCurrency = newVal;
-                        });
+                      onChanged: (v) {
+                        setState(() => _toCurrency = v!);
                         _calculate();
                       },
                     ),
@@ -313,17 +253,9 @@ class _DivisasScreenState extends State<DivisasScreen> {
 
               const SizedBox(height: 40),
 
-              // Conversión
-              const Align(
-                alignment: Alignment.center,
-                child: Text(
-                  'Conversión',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+              const Text('Conversión',
+                  style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               _pillTextField(
                 controller: _resultController,
@@ -331,48 +263,37 @@ class _DivisasScreenState extends State<DivisasScreen> {
                 hint: '0.00',
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 40),
 
-              
-
-              // Logo CALCNOW + casita abajo
-              Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'CALC',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black,
-                      ),
+              // LOGO CALCNOW CORRECTO
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "CALC",
+                    style: TextStyle(
+                      fontSize: 58,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black,
                     ),
-                    Text(
-                      'NOW',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: primaryColor,
-                      ),
+                  ),
+                  const Text(
+                    "NOW",
+                    style: TextStyle(
+                      fontSize: 58,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF46899F),
                     ),
-                    const SizedBox(width: 10),
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: primaryColor, width: 1.6),
-                      ),
-                      child: Icon(
-                        Icons.home_outlined,
-                        size: 18,
-                        color: primaryColor,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 15),
+                  Image.asset(
+                    'assets/logo_transparente.png',
+                    width: 75,
+                    height: 75,
+                    fit: BoxFit.contain,
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
             ],
           ),
         ),
