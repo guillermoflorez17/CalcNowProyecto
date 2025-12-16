@@ -12,6 +12,12 @@ class AuthModel {
         return rows.length > 0 ? rows[0] : null;
     }
 
+    static async findByEmail(email) {
+        const query = "SELECT * FROM usuario WHERE correo_electronico = ?";
+        const [rows] = await db.query(query, [email]);
+        return rows.length > 0 ? rows[0] : null;
+    }
+
     static async create(email, password) {
         const query = "INSERT INTO usuario (correo_electronico, contrasena) VALUES (?, ?)";
         const [result] = await db.query(query, [email, password]);

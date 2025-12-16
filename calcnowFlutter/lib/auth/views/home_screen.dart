@@ -9,7 +9,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _hovered = ""; // Para detectar hover
-  String _pressed = ""; // Para animación de rebote al hacer clic
+  String _pressed = ""; // Para animacion de rebote al hacer clic
 
   @override
   Widget build(BuildContext context) {
@@ -34,8 +34,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 120),
-
-                  // LOGO CALCNOW
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -56,7 +54,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(width: 15),
-
                       Image.asset(
                         'assets/logo_transparente.png',
                         width: 75,
@@ -65,10 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 110),
-
-                  // TARJETAS PRINCIPALES
                   Wrap(
                     alignment: WrapAlignment.center,
                     spacing: 90,
@@ -81,22 +75,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: () => Navigator.pushNamed(context, '/divisas'),
                       ),
                       _buildCard(
-                        title: "Cálculo de nómina",
+                        title: "Calculo de nomina",
                         description:
-                            "Calcula tu salario neto de forma\nrápida y precisa.",
+                            "Calcula tu salario neto de forma\nrapida y precisa.",
                         onTap: () => Navigator.pushNamed(context, '/nomina'),
                       ),
                       _buildCard(
-                        title: "Cálculo de hipoteca",
+                        title: "Calculo de hipoteca",
                         description: "Simula tu cuota mensual en\nsegundos.",
                         onTap: () => Navigator.pushNamed(context, '/hipoteca'),
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 130),
-
-                  // BOTÓN LOGIN
                   SizedBox(
                     width: 280,
                     height: 80,
@@ -118,7 +109,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 80),
                 ],
               ),
@@ -128,8 +118,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-
 
   Widget _buildCard({
     required String title,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // ← IMPORT NECESARIO
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -13,34 +13,36 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // ---- LOGIN REAL CON NODE ----
-  void _login() async {
+  bool _loading = false;
+
+  Future<void> _login() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Rellena todos los campos")));
+      _show("Rellena todos los campos");
       return;
     }
 
+    setState(() => _loading = true);
     final response = await AuthService.login(email, password);
+    setState(() => _loading = false);
 
-    if (response["ok"] == true) {
-      // ---------- GUARDAR SESIÓN CORRECTA ----------
+    if (response["success"] == true || response["ok"] == true) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('logged', true);
-
-      // ---------- ENVIAR AL HOME ----------
-      Navigator.pushReplacementNamed(context, '/home');
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response["message"] ?? "Credenciales incorrectas"),
-        ),
-      );
+      _show(response["message"] ?? "Credenciales incorrectas");
     }
+  }
+
+  void _show(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
@@ -50,7 +52,6 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            /// -------- ICONO HOME ARRIBA DERECHA ----------
             Positioned(
               top: 25,
               right: 25,
@@ -58,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onTap: () => Navigator.pushNamed(context, '/home'),
                 child: MouseRegion(
                   cursor: SystemMouseCursors.click,
-                  child: Icon(
+                  child: const Icon(
                     Icons.home_outlined,
                     size: 40,
                     color: Colors.black87,
@@ -66,16 +67,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-
-            /// -------- CONTENIDO PRINCIPAL ----------
             Center(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 25),
                 child: Column(
                   children: [
                     const SizedBox(height: 45),
-
-                    /// TITULO
                     const Text(
                       "Nos alegra volver a verte",
                       textAlign: TextAlign.center,
@@ -86,7 +83,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-
                     const Text(
                       "Introduce tu correo asociado a tu cuenta de CalcNow",
                       textAlign: TextAlign.center,
@@ -96,17 +92,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: Colors.black87,
                       ),
                     ),
-
                     const SizedBox(height: 45),
-
-                    /// ------------------ EMAIL ------------------
                     SizedBox(
                       width: 370,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Introduzca su correo electrónico",
+                          const Text(
+                            "Introduzca su correo electronico",
                             style: TextStyle(
                               fontSize: 17,
                               color: Colors.black87,
@@ -114,26 +107,25 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           const SizedBox(height: 6),
-
                           TextFormField(
                             controller: _emailController,
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.white,
-                              contentPadding: EdgeInsets.symmetric(
+                              contentPadding: const EdgeInsets.symmetric(
                                 vertical: 16,
                                 horizontal: 20,
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: Color(0xFF46899F),
                                   width: 2.7,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: Color(0xFF46899F),
                                   width: 3.2,
                                 ),
@@ -143,17 +135,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 25),
-
-                    /// ------------------ PASSWORD ------------------
                     SizedBox(
                       width: 370,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Introduzca su contraseña",
+                          const Text(
+                            "Introduzca su contrasena",
                             style: TextStyle(
                               fontSize: 17,
                               color: Colors.black87,
@@ -161,27 +150,26 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           const SizedBox(height: 6),
-
                           TextFormField(
                             controller: _passwordController,
                             obscureText: true,
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.white,
-                              contentPadding: EdgeInsets.symmetric(
+                              contentPadding: const EdgeInsets.symmetric(
                                 vertical: 16,
                                 horizontal: 20,
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: Color(0xFF46899F),
                                   width: 2.7,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: Color(0xFF46899F),
                                   width: 3.2,
                                 ),
@@ -191,41 +179,44 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 50),
-
-                    /// -------- BOTÓN LOGIN --------
                     SizedBox(
                       width: 230,
                       height: 65,
                       child: ElevatedButton(
-                        onPressed: _login,
+                        onPressed: _loading ? null : _login,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50),
                           ),
                         ),
-                        child: const Text(
-                          "ACCEPT",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
+                        child: _loading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                "ACCEPT",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
-                    /// -------- BOTÓN SIGN UP --------
                     SizedBox(
                       width: 230,
                       height: 60,
                       child: ElevatedButton(
-                        onPressed: () =>
-                            Navigator.pushNamed(context, '/register'),
+                        onPressed:
+                            _loading ? null : () => Navigator.pushNamed(context, '/register'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           shape: RoundedRectangleBorder(
@@ -242,10 +233,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 70),
-
-                    /// -------- LOGO CALCNOW --------
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -273,7 +261,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 40),
                   ],
                 ),
