@@ -1,4 +1,4 @@
-const db = require('../database/db').promise();
+const db = require('../database/db');
 
 class NominaModel {
 

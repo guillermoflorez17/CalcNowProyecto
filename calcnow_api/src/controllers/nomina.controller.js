@@ -3,15 +3,24 @@ const nominaService = require('../services/nomina.service');
 exports.calcular = async(req, res) => {
     try {
         const resultado = nominaService.ejecutarCalculo(req.body);
-        const id = await nominaService.guardarDirecto(req.body, resultado);
+
+        let id = null;
+        if (req.body.id_usuario) {
+            id = await nominaService.guardarDirecto(req.body, resultado);
+        }
 
         res.status(200).json({
             success: true,
             ...resultado,
             id_nomina: id
         });
+
     } catch (error) {
-        res.status(400).json({ success: false, error: error.message });
+        console.error(error);
+        res.status(400).json({
+            success: false,
+            error: error.message
+        });
     }
 };
 

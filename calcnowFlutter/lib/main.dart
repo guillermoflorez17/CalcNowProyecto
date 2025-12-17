@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 // -------------------- VISTAS --------------------
-import 'auth/views/login_screen.dart';
-import 'auth/views/register_screen.dart';
-import 'auth/views/home_screen.dart';
+import 'views/auth/login_screen.dart';
+import 'views/auth/register_screen.dart';
+import 'views/home/home_screen.dart';
 
 // -------------------- CALCULADORAS --------------------
-import 'auth/views/nomina_screen.dart';
-import 'auth/views/hipoteca_screen.dart';
-import 'auth/views/divisas_screen.dart';
+import 'views/nomina/nomina_screen.dart';
+import 'views/hipoteca/hipoteca_screen.dart';
+import 'views/divisas/divisas_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const CalcNowApp());
